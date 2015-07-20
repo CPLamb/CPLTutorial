@@ -85,6 +85,7 @@
     
     NSString *fullUrl = [NSString stringWithFormat:@"http://services.arcgis.com/OfH668nDRN7tbJh0/ArcGIS/rest/services/NYCEvacZones2013/FeatureServer/0/query?%@",encodeQuery];
   //  NSString *fullUrl = [NSString stringWithFormat:@"https://pluto.cartodb.com/api/v2/sql?format=GeoJSON&q=%@",encodeQuery];
+    NSLog(@"%@", fullUrl);
     
     NSURLRequest *urlReq = [NSURLRequest requestWithURL:[NSURL URLWithString:fullUrl]];
     
