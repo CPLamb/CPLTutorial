@@ -163,11 +163,8 @@ const bool DoOverlay = true;
     // add the countries
     [self addCountries];
     
-    // Instantiate the NSOperationQueue
-    opQueue = [[NSOperationQueue alloc] init];
-    
     //add the pics from Journey
-//    [self addPics];
+    [self addPics];
 }
 
 - (void)addPics
@@ -188,42 +185,36 @@ const bool DoOverlay = true;
     // Just looping along
     for (int i=0;i<350;i++) {
         NSURL *thePicThumbnailUrl = [NSURL URLWithString:[picsArray[i] objectForKey:@"thumbUrl"]];
-        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:thePicThumbnailUrl];
         
         MaplyScreenMarker *theScreenMarker = [[MaplyScreenMarker alloc] init];
-
-        // Let's try this on another thread (per CartoDB)
-        [NSURLConnection sendAsynchronousRequest:urlRequest queue:opQueue completionHandler:
-         ^(NSURLResponse *response, NSData *data, NSError *connectionError)
-         {
-             thePicData = [NSData dataWithContentsOfURL:thePicThumbnailUrl];
-             theScreenMarker.image = [UIImage imageWithData:thePicData];
-         }];
-             NSString *latitude = [picsArray[i] objectForKey:@"latitude"];
-             NSString *longitude = [picsArray[i] objectForKey:@"longitude"];
-             MaplyCoordinate theLocation = MaplyCoordinateMakeWithDegrees([longitude floatValue], [latitude floatValue]);
-             MaplyCoordinate3d theSpaceLocation = MaplyCoordinate3dMake([longitude floatValue]/57.3, [latitude floatValue]/57.3, 200000);
-             
-             theScreenMarker.loc = theLocation;
-             
-             theScreenMarker.size = CGSizeMake(60.0, 60.0);
-             theScreenMarker.offset = CGPointMake(-30.0, 10.0);
-             theScreenMarker.layoutImportance = MAXFLOAT;
-             
-             // Adds the pic to the list
-             if ([thePicData length] < 45000) {      // if it's less than 60k
-                 [theMarkers addObject:theScreenMarker];
-                 //          picCount = picCount + 1;
-                 //          picKBytes = picKBytes + [thePicData length];
-             }
-             MaplyMarker *theMarkerPic = [[MaplyMarker alloc] init];
-             //[[MaplyBillboard alloc] initWithImage:[UIImage imageWithData:thePicData] color:[UIColor whiteColor] size:CGSizeMake(0.08, 0.08)];
-             theMarkerPic.loc = theLocation;
-             theMarkerPic.image = [UIImage imageWithData:thePicData];
-             theMarkerPic.size = CGSizeMake(0.00075, 0.00075);
-             //     [theMarkers addObject:theMarkerPic];
-             
-             NSLog(@"Pic #%d looks like %@ and is %d long", i, [picsArray[i] objectForKey:@"storyCoverText"], [thePicData length]);
+        
+        thePicData = [NSData dataWithContentsOfURL:thePicThumbnailUrl];
+        theScreenMarker.image = [UIImage imageWithData:thePicData];
+        NSString *latitude = [picsArray[i] objectForKey:@"latitude"];
+        NSString *longitude = [picsArray[i] objectForKey:@"longitude"];
+        MaplyCoordinate theLocation = MaplyCoordinateMakeWithDegrees([longitude floatValue], [latitude floatValue]);
+        MaplyCoordinate3d theSpaceLocation = MaplyCoordinate3dMake([longitude floatValue]/57.3, [latitude floatValue]/57.3, 200000);
+        
+        theScreenMarker.loc = theLocation;
+        
+        theScreenMarker.size = CGSizeMake(60.0, 60.0);
+        theScreenMarker.offset = CGPointMake(-30.0, 10.0);
+        theScreenMarker.layoutImportance = MAXFLOAT;
+        
+        // Adds the pic to the list
+        if ([thePicData length] < 45000) {      // if it's less than 60k
+            [theMarkers addObject:theScreenMarker];
+            //          picCount = picCount + 1;
+            //          picKBytes = picKBytes + [thePicData length];
+        }
+        MaplyMarker *theMarkerPic = [[MaplyMarker alloc] init];
+        //[[MaplyBillboard alloc] initWithImage:[UIImage imageWithData:thePicData] color:[UIColor whiteColor] size:CGSizeMake(0.08, 0.08)];
+        theMarkerPic.loc = theLocation;
+        theMarkerPic.image = [UIImage imageWithData:thePicData];
+        theMarkerPic.size = CGSizeMake(0.00075, 0.00075);
+        //     [theMarkers addObject:theMarkerPic];
+        
+        NSLog(@"Pic #%d looks like %@ and is %d long", i, [picsArray[i] objectForKey:@"storyCoverText"], [thePicData length]);
     }
     
     //Add the screenMarker array to the layer

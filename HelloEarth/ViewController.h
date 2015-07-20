@@ -11,9 +11,7 @@
 #import <CoreLocation/CoreLocation.h>
 
 @interface ViewController : UIViewController <CLLocationManagerDelegate>
-{
-    NSOperationQueue *opQueue;
-}
+
 
 @end
 
