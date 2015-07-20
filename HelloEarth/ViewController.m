@@ -8,7 +8,6 @@
 
 #import "ViewController.h"
 #import "WhirlyGlobeComponent.h"
-#import "ArcGISLayer.h"
 
 @interface ViewController ()
 {
@@ -29,7 +28,7 @@
 }
 
 // Set these for different view options
-const bool DoOverlay = false;
+const bool DoOverlay = true;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -40,21 +39,6 @@ const bool DoOverlay = false;
     theViewC.view.frame = self.view.bounds;
     [self addChildViewController:theViewC];
     
-// Create your location on the map
-    locationManager = [[CLLocationManager alloc] init];
-    locationManager.delegate = self;
-    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-    
-    // Check for iOS 8. Without this guard the code will crash with "unknown selector" on iOS 7.
-    if ([locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])
-    {
-        [locationManager requestWhenInUseAuthorization];
-    }
-
-    [locationManager startUpdatingLocation];
- 
-    // Display a MaplyScreenObject with your location
-    [self addStuff];            // It more about random stuff now
     
     // this logic makes it work for either globe or map
     WhirlyGlobeViewController *globeViewC = nil;
@@ -68,7 +52,7 @@ const bool DoOverlay = false;
     theViewC.clearColor = (globeViewC != nil) ? [UIColor lightGrayColor] : [UIColor whiteColor];
     
     // and thirty fps if we can get it ­ change this to 3 if you find your app is struggling
-    theViewC.frameInterval = 3;     //2
+    theViewC.frameInterval = 2;     //2
     
 // Varies the tilt per height
  //   [theViewC setTiltMinHeight:0.005 maxHeight:0.10 minTilt:1.10 maxTilt:0.02];
@@ -92,7 +76,7 @@ const bool DoOverlay = false;
          objectAtIndex:0];
         NSString *aerialTilesCacheDir = [NSString stringWithFormat:@"%@/osmtiles/",
                                          baseCacheDir];
-        int maxZoom = 18;
+        int maxZoom = 9;
         
 // A set of various base layers to select from. Remember to adjust the maxZoom factor appropriately
         // http://otile1.mqcdn.com/tiles/1.0.0/sat/
@@ -123,10 +107,10 @@ const bool DoOverlay = false;
     // start up over Santa Cruz, center of the universe's beach
     if (globeViewC != nil)
     {
-        globeViewC.height = 0.006;
+        globeViewC.height = 0.20;
         globeViewC.heading = 0.15;
-        globeViewC.tilt = 0.35;         // PI/2 radians = horizon??
-        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-74.1,40.60)
+        globeViewC.tilt = 0.25;         // PI/2 radians = horizon??
+        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-110.1, 25.60)
                                  time:1.0];
     } else {
         mapViewC.height = 0.05;
@@ -167,109 +151,6 @@ const bool DoOverlay = false;
     // add the countries
     [self addCountries];
     
-    //add the pics from Journey
-//    [self addPics];
-    
-    // add the ArcGISLayer vector layer
-//    [self addVectorLayer];
-}
-
-- (void)addVectorLayer
-{
-    NSString *search = @"WHERE=Zone=5&f=pgeojson&outSR=4326";
-    //  NSString *search = @"WHERE=Borough='Manhattan'&f=pgeojson&outSR=4326";
-    //   NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
-    
-    ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
-    vectorLayer.minZoom = 10;   //15
-    vectorLayer.maxZoom = 13;
-    MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
-    MaplyQuadPagingLayer *quadLayer =
-    [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:vectorLayer];
-    [theViewC addLayer:quadLayer];
-}
-
-- (void)addPics
-{
-    NSLog(@"Adding the geolocated pics");
-    
-    //First we unstuff the pList
-    NSBundle *mainBundle = [NSBundle mainBundle];
-    NSURL *plistURL = [mainBundle URLForResource:@"UniqueStoriesPart13" withExtension:@"plist"];
-    picsArray = [NSArray arrayWithContentsOfURL:plistURL];
-    
-    //Next we display the pics on the globe
-    NSMutableArray *theMarkers = [[NSMutableArray alloc] initWithCapacity:1000];
-    
-    int picCount = 0;
-    int picKBytes = 0;
-    
-    // Just looping along
-    for (int i=0;i<75;i++) {
-        NSURL *thePicThumbnailUrl = [NSURL URLWithString:[picsArray[i] objectForKey:@"thumbUrl"]];
-        
-        MaplyScreenMarker *theScreenMarker = [[MaplyScreenMarker alloc] init];
-        
-        thePicData = [NSData dataWithContentsOfURL:thePicThumbnailUrl];
-        theScreenMarker.image = [UIImage imageWithData:thePicData];
-        NSString *latitude = [picsArray[i] objectForKey:@"latitude"];
-        NSString *longitude = [picsArray[i] objectForKey:@"longitude"];
-        MaplyCoordinate theLocation = MaplyCoordinateMakeWithDegrees([longitude floatValue], [latitude floatValue]);
-        MaplyCoordinate3d theSpaceLocation = MaplyCoordinate3dMake([longitude floatValue]/57.3, [latitude floatValue]/57.3, 200000);
-        
-        theScreenMarker.loc = theLocation;
-        
-        theScreenMarker.size = CGSizeMake(60.0, 60.0);
-        theScreenMarker.offset = CGPointMake(-30.0, 10.0);
-        theScreenMarker.layoutImportance = MAXFLOAT;
-        
-        // Adds the pic to the list
-        if ([thePicData length] < 45000) {      // if it's less than 60k
-            [theMarkers addObject:theScreenMarker];
-            picCount = picCount + 1;
-            picKBytes = picKBytes + [thePicData length];
-        }
-        MaplyMarker *theMarkerPic = [[MaplyMarker alloc] init];
-        //[[MaplyBillboard alloc] initWithImage:[UIImage imageWithData:thePicData] color:[UIColor whiteColor] size:CGSizeMake(0.08, 0.08)];
-        theMarkerPic.loc = theLocation;
-        theMarkerPic.image = [UIImage imageWithData:thePicData];
-        theMarkerPic.size = CGSizeMake(0.00075, 0.00075);
-        //     [theMarkers addObject:theMarkerPic];
-        
-        NSLog(@"Pic #%d looks like %@ and is %d long", i, [picsArray[i] objectForKey:@"storyCoverText"], [thePicData length]);
-    }
-    
-    //Add the screenMarker array to the layer
-    [theViewC addScreenMarkers:theMarkers desc:nil];
-    
-    NSLog(@"Added %lu geolocated pics total kB = %d", (unsigned long)picCount, picKBytes);
-    
-}
-
-- (void) addStuff        //Adds a variety of objects to see what may
-{
-    MaplyCoordinate theLocation = MaplyCoordinateMakeWithDegrees(-124.00, 36.98);
-    
-// screenMarkers
-    MaplyScreenMarker *yourLocation = [[MaplyScreenMarker alloc] init];
-    yourLocation.image = [UIImage imageNamed:@"OtterPraying.png"];
-    yourLocation.loc = theLocation;
-    yourLocation.size = CGSizeMake(60.0, 100.0);
-    NSMutableArray *theMarkers = [NSMutableArray arrayWithObject:yourLocation];
-    [theViewC addScreenMarkers:theMarkers desc:nil];
-
-//screenBillboards
-    MaplyBillboard *yourBillboard = [[MaplyBillboard alloc] initWithImage:[UIImage imageNamed:@"GodParticle120.png"] color:[UIColor whiteColor] size:CGSizeMake(0.08, 0.08)];
-    yourBillboard.center = MaplyCoordinate3dMake(-2.05, 0.63, 220000.0);
-    NSMutableArray *theBillboards = [NSMutableArray arrayWithObject:yourBillboard];
-//    [theViewC addBillboards:theBillboards desc:nil mode:nil];
-
-  }
-
-- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
-//- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
-{
-    NSLog(@"Updating my location to the map/globe %f %f", locationManager.location.coordinate.latitude, locationManager.location.coordinate.longitude);
 }
 
 - (void)addCountries
