@@ -34,6 +34,7 @@
      completionHandler:
      ^(NSURLResponse *response, NSData *data, NSError *connectionError)
      {
+         NSLog(@"Returned data is %d", data.length);
          // parse the resulting GeoJSON
          MaplyVectorObject *vecObj = [MaplyVectorObject VectorObjectFromGeoJSON:data];
          
@@ -44,8 +45,8 @@
              [layer.viewC
               addVectors:@[vecObj]
               desc:@{kMaplyColor: [UIColor colorWithRed:0.0
-                                                  green:0.25 blue:0.0 alpha:0.25],
-                     kMaplyFilled: @(NO),
+                                                  green:0.25 blue:0.0 alpha:0.15],
+                     kMaplyFilled: @(YES),
                      kMaplyEnable: @(NO)
                      }
               mode:MaplyThreadCurrent];
@@ -82,7 +83,7 @@
     // http://services.arcgis.com/OfH668nDRN7tbJh0/ArcGIS/rest/services/NYCEvacZones2013/FeatureServer
     // http://services.arcgis.com/OfH668nDRN7tbJh0/arcgis/rest/services/SandyNYCEvacMap/FeatureServer/0/query?
     
-    NSString *fullUrl = [NSString stringWithFormat:@"http://services.arcgis.com/OfH668nDRN7tbJh0/arcgis/rest/services/SandyNYCEvacMap/FeatureServer/0/query?%@",encodeQuery];
+    NSString *fullUrl = [NSString stringWithFormat:@"http://services.arcgis.com/OfH668nDRN7tbJh0/ArcGIS/rest/services/NYCEvacZones2013/FeatureServer/0/query?%@",encodeQuery];
   //  NSString *fullUrl = [NSString stringWithFormat:@"https://pluto.cartodb.com/api/v2/sql?format=GeoJSON&q=%@",encodeQuery];
     
     NSURLRequest *urlReq = [NSURLRequest requestWithURL:[NSURL URLWithString:fullUrl]];
