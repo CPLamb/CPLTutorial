@@ -28,7 +28,7 @@
 }
 
 // Set these for different view options
-const bool DoOverlay = true;
+const bool DoOverlay = false;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -76,7 +76,7 @@ const bool DoOverlay = true;
          objectAtIndex:0];
         NSString *aerialTilesCacheDir = [NSString stringWithFormat:@"%@/osmtiles/",
                                          baseCacheDir];
-        int maxZoom = 9;
+        int maxZoom = 18;
         
 // A set of various base layers to select from. Remember to adjust the maxZoom factor appropriately
         // http://otile1.mqcdn.com/tiles/1.0.0/sat/
@@ -89,8 +89,8 @@ const bool DoOverlay = true;
         // Portions Courtesy NASA/JPL­Caltech and U.S. Depart. of Agriculture, Farm Service Agency
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
-         initWithBaseURL:@"http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/2015-05-07/GoogleMapsCompatible_Level8/{z}/{y}/{x}"
-         ext:@"jpg" minZoom:0 maxZoom:maxZoom];
+         initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
+         ext:@"png" minZoom:0 maxZoom:maxZoom];
         tileSource.cacheDir = aerialTilesCacheDir;
         layer = [[MaplyQuadImageTilesLayer alloc]
                  initWithCoordSystem:tileSource.coordSys tileSource:tileSource];
