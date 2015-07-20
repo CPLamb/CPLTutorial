@@ -105,8 +105,8 @@ const bool DoOverlay = false;
         // Portions Courtesy NASA/JPL­Caltech and U.S. Depart. of Agriculture, Farm Service Agency
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
-         initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
-         ext:@"png" minZoom:0 maxZoom:maxZoom];
+         initWithBaseURL:@"http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/2015-05-07/GoogleMapsCompatible_Level8/{z}/{y}/{x}"
+         ext:@"jpg" minZoom:0 maxZoom:maxZoom];
         tileSource.cacheDir = aerialTilesCacheDir;
         layer = [[MaplyQuadImageTilesLayer alloc]
                  initWithCoordSystem:tileSource.coordSys tileSource:tileSource];
@@ -165,13 +165,13 @@ const bool DoOverlay = false;
                    kMaplyVecWidth: @(4.0)};
     
     // add the countries
-//    [self addCountries];
+    [self addCountries];
     
     //add the pics from Journey
-    [self addPics];
+//    [self addPics];
     
     // add the ArcGISLayer vector layer
-    [self addVectorLayer];
+//    [self addVectorLayer];
 }
 
 - (void)addVectorLayer
