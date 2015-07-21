@@ -82,14 +82,12 @@ const bool DoOverlay = true;
         // http://otile1.mqcdn.com/tiles/1.0.0/sat/
         // http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/2015-05-07/GoogleMapsCompatible_Level8/ - jpg
         // http://map1.vis.earthdata.nasa.gov/wmts-webmerc/MODIS_Terra_CorrectedReflectance_TrueColor/default/2015-06-07/GoogleMapsCompatible_Level9/{z}/{y}/{x}  - jpg
-        // http://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}
-        // http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}
         
         // MapQuest Open Aerial Tiles, Courtesy Of Mapquest
         // Portions Courtesy NASA/JPL­Caltech and U.S. Depart. of Agriculture, Farm Service Agency
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
-         initWithBaseURL:@"http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/2015-05-07/GoogleMapsCompatible_Level8/{z}/{y}/{x}"
+         initWithBaseURL:@"http://map1.vis.earthdata.nasa.gov/wmts-webmerc/MODIS_Terra_CorrectedReflectance_TrueColor/default/2015-06-07/GoogleMapsCompatible_Level9/{z}/{y}/{x}"
          ext:@"jpg" minZoom:0 maxZoom:maxZoom];
         tileSource.cacheDir = aerialTilesCacheDir;
         layer = [[MaplyQuadImageTilesLayer alloc]
@@ -110,7 +108,7 @@ const bool DoOverlay = true;
         globeViewC.height = 0.20;
         globeViewC.heading = 0.15;
         globeViewC.tilt = 0.25;         // PI/2 radians = horizon??
-        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-110.1, 25.60)
+        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-112.1, 30.60)
                                  time:1.0];
     } else {
         mapViewC.height = 0.05;
