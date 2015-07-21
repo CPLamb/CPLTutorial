@@ -27,7 +27,7 @@
     [layer geoBoundsforTile:tileID ll:&bbox.ll ur:&bbox.ur];
     NSURLRequest *urlReq = [self constructRequest:bbox];
     
- //   NSLog(@"The URL request is %@ & tileID is %d", urlReq.description, tileID);
+    NSLog(@"boundingBox= %3.2f, %3.2f & tileID= %d", bbox.ll.x*57.0, bbox.ur.x*57.0, tileID);
 
     // kick off the query asychronously
     [NSURLConnection
@@ -36,7 +36,7 @@
      completionHandler:
      ^(NSURLResponse *response, NSData *data, NSError *connectionError)
      {
-  //       NSLog(@"returned data length is %lu", (unsigned long)data.length);
+         NSLog(@"returned data length is %lu", (unsigned long)data.length);
          // parse the resulting GeoJSON
          MaplyVectorObject *vecObj = [MaplyVectorObject VectorObjectFromGeoJSON:data];
          

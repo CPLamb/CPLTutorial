@@ -154,12 +154,12 @@ const bool DoOverlay = false;
 
 - (void)addVectorLayer
 {
-    NSString *search = @"WHERE=Zone>=0&f=pgeojson&outSR=4326";
+    NSString *search = @"WHERE=Zone>=5&f=pgeojson&outSR=4326";
   //     NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
     
     ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
-    vectorLayer.minZoom = 9;   //15
-    vectorLayer.maxZoom = 13;
+    vectorLayer.minZoom = 10;   //15
+    vectorLayer.maxZoom = 10;
     MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
     MaplyQuadPagingLayer *quadLayer =
     [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:vectorLayer];
