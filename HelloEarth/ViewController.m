@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "WhirlyGlobeComponent.h"
+#import "ArcGISLayer.h"
 
 @interface ViewController ()
 {
@@ -76,17 +77,12 @@ const bool DoOverlay = false;
          objectAtIndex:0];
         NSString *aerialTilesCacheDir = [NSString stringWithFormat:@"%@/osmtiles/",
                                          baseCacheDir];
-        int maxZoom = 18;
+        int maxZoom = 16;
         
 // A set of various base layers to select from. Remember to adjust the maxZoom factor appropriately
         // http://otile1.mqcdn.com/tiles/1.0.0/sat/
-        // http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/2015-05-07/GoogleMapsCompatible_Level8/ - jpg
-        // http://map1.vis.earthdata.nasa.gov/wmts-webmerc/MODIS_Terra_CorrectedReflectance_TrueColor/default/2015-06-07/GoogleMapsCompatible_Level9/{z}/{y}/{x}  - jpg
         // http://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}
         // http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}
-        
-        // MapQuest Open Aerial Tiles, Courtesy Of Mapquest
-        // Portions Courtesy NASA/JPL­Caltech and U.S. Depart. of Agriculture, Farm Service Agency
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
          initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
@@ -107,10 +103,10 @@ const bool DoOverlay = false;
     // start up over Santa Cruz, center of the universe's beach
     if (globeViewC != nil)
     {
-        globeViewC.height = 0.20;
+        globeViewC.height = 0.016;
         globeViewC.heading = 0.15;
-        globeViewC.tilt = 0.25;         // PI/2 radians = horizon??
-        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-110.1, 25.60)
+        globeViewC.tilt = 0.15;         // PI/2 radians = horizon??
+        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.9, 40.90)
                                  time:1.0];
     } else {
         mapViewC.height = 0.05;
@@ -149,8 +145,26 @@ const bool DoOverlay = false;
                    kMaplyVecWidth: @(4.0)};
     
     // add the countries
-    [self addCountries];
+//    [self addCountries];
     
+// add the ArcGIS vector layer
+    [self addVectorLayer];
+    
+}
+
+- (void)addVectorLayer
+{
+    NSString *search = @"WHERE=Zone>4&f=pgeojson&outSR=4326";
+    //  NSString *search = @"WHERE=Borough='Manhattan'&f=pgeojson&outSR=4326";
+    //   NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
+    
+    ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
+    vectorLayer.minZoom = 8;   //15
+    vectorLayer.maxZoom = 15;
+    MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
+    MaplyQuadPagingLayer *quadLayer =
+    [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:vectorLayer];
+    [theViewC addLayer:quadLayer];
 }
 
 - (void)addCountries
