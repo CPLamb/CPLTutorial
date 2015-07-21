@@ -8,7 +8,7 @@
 
 #import "ViewController.h"
 #import "WhirlyGlobeComponent.h"
-#import "ArcGISLayer.h"
+//#import "ArcGISLayer.h"
 
 @interface ViewController ()
 {
@@ -168,25 +168,10 @@ const bool DoOverlay = false;
 //    [self addCountries];
     
     //add the pics from Journey
-//    [self addPics];
+    [self addPics];
     
     // add the ArcGISLayer vector layer
-    [self addVectorLayer];
-}
-
-- (void)addVectorLayer
-{
-    NSString *search = @"WHERE=Zone>=4&f=pgeojson&outSR=4326";
-    //  NSString *search = @"WHERE=Borough='Manhattan'&f=pgeojson&outSR=4326";
-    //   NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
-    
-    ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
-    vectorLayer.minZoom = 10;   //15
-    vectorLayer.maxZoom = 13;
-    MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
-    MaplyQuadPagingLayer *quadLayer =
-    [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:vectorLayer];
-    [theViewC addLayer:quadLayer];
+ //   [self addVectorLayer];
 }
 
 - (void)addPics
