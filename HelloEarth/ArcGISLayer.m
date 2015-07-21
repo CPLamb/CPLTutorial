@@ -41,16 +41,25 @@
          MaplyVectorObject *vecObj = [MaplyVectorObject VectorObjectFromGeoJSON:data];
          
          NSLog(@"Data from ESRI is %@", vecObj.attributes);
-
+         
+    // Attempting to give different colors to the Zones
+         UIColor *vectObjectColor = [UIColor colorWithRed:0.0
+                                                    green:0.25 blue:0.0 alpha:0.25];
+         NSString *vectAttrib = [NSString stringWithFormat:[vecObj.attributes objectForKey:@"Zone"]];
+  /*       if ([vectAttrib isEqualToString:@"5"]) {
+             NSLog(@"Say YEAH! it's 5!");
+             vectObjectColor = [UIColor colorWithRed:0.30
+                                               green:0.0 blue:0.0 alpha:0.25];
+         }
+ */
          if (vecObj)
          {
              // display a transparent filled polygon
              MaplyComponentObject *filledObj =
              [layer.viewC
               addVectors:@[vecObj]
-              desc:@{kMaplyColor: [UIColor colorWithRed:0.0
-                                                  green:0.25 blue:0.0 alpha:0.25],
-                     kMaplyFilled: @(NO),
+              desc:@{kMaplyColor: vectObjectColor,
+                     kMaplyFilled: @(YES),
                      kMaplyEnable: @(NO)
                      }
               mode:MaplyThreadCurrent];
