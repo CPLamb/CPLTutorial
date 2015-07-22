@@ -124,8 +124,8 @@ const bool DoOverlay = false;
     if (globeViewC != nil)
     {
         globeViewC.height = 0.006;
-        globeViewC.heading = 0.15;
-        globeViewC.tilt = 0.35;         // PI/2 radians = horizon??
+        globeViewC.heading = 3.14;  // in radians
+        globeViewC.tilt = 0.35;         // PI/2 radians = horizon
         [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-74.1,40.60)
                                  time:1.0];
     } else {
