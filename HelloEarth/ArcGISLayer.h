@@ -13,6 +13,7 @@
 {
     NSString *search;
     NSOperationQueue *opQueue;
+    NSInteger zoneNumber;
 }
 
 @property (nonatomic, assign) int minZoom, maxZoom;

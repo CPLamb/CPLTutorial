@@ -154,7 +154,7 @@ const bool DoOverlay = false;
 
 - (void)addVectorLayer
 {
-    NSString *search = @"WHERE=Zone=4&f=pgeojson&outSR=4326";
+    NSString *search = @"WHERE=Zone=1&f=pgeojson&outSR=4326";
   //     NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
     
     ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
