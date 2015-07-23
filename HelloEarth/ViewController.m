@@ -77,15 +77,18 @@ const bool DoOverlay = false;
          objectAtIndex:0];
         NSString *aerialTilesCacheDir = [NSString stringWithFormat:@"%@/osmtiles/",
                                          baseCacheDir];
-        int maxZoom = 16;
+        int maxZoom = 20;
         
 // A set of various base layers to select from. Remember to adjust the maxZoom factor appropriately
         // http://otile1.mqcdn.com/tiles/1.0.0/sat/
         // http://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}
         // http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}
+        // http://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}
+        // http://services.arcgisonline.com/arcgis/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}
+        
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
-         initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
+         initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}"
          ext:@"png" minZoom:0 maxZoom:maxZoom];
         tileSource.cacheDir = aerialTilesCacheDir;
         layer = [[MaplyQuadImageTilesLayer alloc]
