@@ -105,7 +105,7 @@ const bool DoOverlay = false;
     {
         globeViewC.height = 0.016;
         globeViewC.heading = 0.15;
-        globeViewC.tilt = 0.15;         // PI/2 radians = horizon??
+        globeViewC.tilt = 0.25;         // PI/2 radians = horizon??
         [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.9, 40.90)
                                  time:1.0];
     } else {
@@ -113,6 +113,9 @@ const bool DoOverlay = false;
         [mapViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-122.4192,37.7793)
                                time:1.0];
     }
+    
+// Adding a little sauce - AutoTilt
+    [globeViewC setTiltMinHeight:0.01 maxHeight:0.1 minTilt:0.4 maxTilt:0.0];
     
     
     // Setup a remote overlay from NASA GIBS
