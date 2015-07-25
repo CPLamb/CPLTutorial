@@ -8,55 +8,56 @@
 
 #import "ViewController.h"
 #import "WhirlyGlobeComponent.h"
-#import "ArcGISLayer.h"
+#import "CartoDBLayer.h"
 
 @interface ViewController ()
-{
-    NSMutableDictionary *ovlLayers;
-}
 
 - (void) addCountries;
+- (void) addAnnotation:(NSString *)title withSubtitle:(NSString *)subtitle at: (MaplyCoordinate)coord;
 
 @end
 
 @implementation ViewController
 {
-    WhirlyGlobeViewController *theViewC;
+    MaplyBaseViewController *theViewC;
+    WhirlyGlobeViewController *globeViewC;
+    MaplyViewController *mapViewC;
     NSDictionary *vectorDict;
-    CLLocationManager *locationManager;
-    NSArray *picsArray;
-    NSData *thePicData;
 }
 
-// Set these for different view options
-const bool DoOverlay = false;
+
+// Set this to false for a map
+const bool DoGlobe = true;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    if (DoGlobe)
+    {
+        globeViewC = [[WhirlyGlobeViewController alloc] init];
+        theViewC = globeViewC;
+    } else {
+        mapViewC = [[MaplyViewController alloc] init];
+        theViewC = mapViewC;
+    }
+    // If you're doing a globe
+    if (globeViewC != nil)
+        globeViewC.delegate = self;
+    
+    // If you're doing a map
+    if (mapViewC != nil)
+        mapViewC.delegate = self;
+    
     // Create an empty globe or map and add it to the view
-    theViewC = [[WhirlyGlobeViewController alloc] init];
     [self.view addSubview:theViewC.view];
     theViewC.view.frame = self.view.bounds;
     [self addChildViewController:theViewC];
     
-    
-    // this logic makes it work for either globe or map
-    WhirlyGlobeViewController *globeViewC = nil;
-    MaplyViewController *mapViewC = nil;
-    if ([theViewC isKindOfClass:[WhirlyGlobeViewController class]])
-        globeViewC = (WhirlyGlobeViewController *)theViewC;
-    else
-        mapViewC = (MaplyViewController *)theViewC;
-    
     // we want a black background for a globe, a white background for a map.
-    theViewC.clearColor = (globeViewC != nil) ? [UIColor lightGrayColor] : [UIColor whiteColor];
+    theViewC.clearColor = (globeViewC != nil) ? [UIColor blackColor] : [UIColor whiteColor];
     
     // and thirty fps if we can get it ­ change this to 3 if you find your app is struggling
-    theViewC.frameInterval = 2;     //2
-    
-// Varies the tilt per height
- //   [theViewC setTiltMinHeight:0.005 maxHeight:0.10 minTilt:1.10 maxTilt:0.02];
+    theViewC.frameInterval = 2;
     
     // add the capability to use the local tiles or remote tiles
     bool useLocalTiles = false;
@@ -77,24 +78,18 @@ const bool DoOverlay = false;
          objectAtIndex:0];
         NSString *aerialTilesCacheDir = [NSString stringWithFormat:@"%@/osmtiles/",
                                          baseCacheDir];
-        int maxZoom = 20;
+        int maxZoom = 18;
         
-// A set of various base layers to select from. Remember to adjust the maxZoom factor appropriately
-        // http://otile1.mqcdn.com/tiles/1.0.0/sat/
-        // http://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}
-        // http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}
-        // http://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}
-        // http://services.arcgisonline.com/arcgis/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}
-        
+        // MapQuest Open Aerial Tiles, Courtesy Of Mapquest
+        // Portions Courtesy NASA/JPL­Caltech and U.S. Depart. of Agriculture, Farm Service Agency
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
-         initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}"
+         initWithBaseURL:@"http://otile1.mqcdn.com/tiles/1.0.0/sat/"
          ext:@"png" minZoom:0 maxZoom:maxZoom];
         tileSource.cacheDir = aerialTilesCacheDir;
         layer = [[MaplyQuadImageTilesLayer alloc]
                  initWithCoordSystem:tileSource.coordSys tileSource:tileSource];
     }
-    
     layer.handleEdges = (globeViewC != nil);
     layer.coverPoles = (globeViewC != nil);
     layer.requireElev = false;
@@ -103,45 +98,16 @@ const bool DoOverlay = false;
     layer.singleLevelLoading = false;
     [theViewC addLayer:layer];
     
-    // start up over Santa Cruz, center of the universe's beach
+    // start up over New York
     if (globeViewC != nil)
     {
-        globeViewC.height = 0.016;
-        globeViewC.heading = 0.15;
-        globeViewC.tilt = 0.25;         // PI/2 radians = horizon??
-        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.9, 40.90)
+        globeViewC.height = 0.0002;
+        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.99,40.75)
                                  time:1.0];
     } else {
-        mapViewC.height = 0.05;
-        [mapViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-122.4192,37.7793)
+        globeViewC.height = 0.0002;
+        [mapViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.99,40.75)
                                time:1.0];
-    }
-    
-// Adding a little sauce - AutoTilt
-    [globeViewC setTiltMinHeight:0.01 maxHeight:0.1 minTilt:0.4 maxTilt:0.0];
-    
-    
-    // Setup a remote overlay from NASA GIBS
-    if (DoOverlay)
-    {
-        // For network paging layers, where we'll store temp files
-        NSString *cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)  objectAtIndex:0];
-        
-        MaplyRemoteTileSource *tileSource = [[MaplyRemoteTileSource alloc] initWithBaseURL:@"http://map1.vis.earthdata.nasa.gov/wmts-webmerc/Sea_Surface_Temp_Blended/default/2015-06-25/GoogleMapsCompatible_Level7/{z}/{y}/{x}" ext:@"png" minZoom:0 maxZoom:9];
-        
-   //     MaplyRemoteTileSource *tileSource = [[MaplyRemoteTileSource alloc] initWithBaseURL:@"http://tile.openweathermap.org/map/precipitation/" ext:@"png" minZoom:0 maxZoom:6];
-        
-        tileSource.cacheDir = [NSString stringWithFormat:@"%@/sea_temperature/",cacheDir];
-        
-        tileSource.tileInfo.cachedFileLifetime = 3; // invalidate OWM data after three secs
-        MaplyQuadImageTilesLayer *temperatureLayer = [[MaplyQuadImageTilesLayer alloc] initWithCoordSystem:tileSource.coordSys tileSource:tileSource];
-        
-        //       NSLog(@"The coordSystem is %@", tileSource.coordSys);
-        
-        temperatureLayer.coverPoles = false;
-        temperatureLayer.handleEdges = false;
-        [globeViewC addLayer:temperatureLayer];
-        
     }
     
     // set the vector characteristics to be pretty and selectable
@@ -151,25 +117,81 @@ const bool DoOverlay = false;
                    kMaplyVecWidth: @(4.0)};
     
     // add the countries
-//    [self addCountries];
+    //    [self addCountries];
     
-// add the ArcGIS vector layer
-    [self addVectorLayer];
+    // add the bar icons
+    //    [self addBars];
     
+    // add some spheres
+    //    [self addSpheres];
+    
+    // add the CartoDB layer
+    [self addBuildings];
 }
 
-- (void)addVectorLayer
+- (void)addSpheres
 {
-    NSString *search = @"WHERE=Zone=1&f=pgeojson&outSR=4326";
-  //     NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
+    // set up some locations
+    MaplyCoordinate capitals[10];
+    capitals[0] = MaplyCoordinateMakeWithDegrees(-77.036667, 38.895111);
+    capitals[1] = MaplyCoordinateMakeWithDegrees(120.966667, 14.583333);
+    capitals[2] = MaplyCoordinateMakeWithDegrees(55.75, 37.616667);
+    capitals[3] = MaplyCoordinateMakeWithDegrees(-0.1275, 51.507222);
+    capitals[4] = MaplyCoordinateMakeWithDegrees(-66.916667, 10.5);
+    capitals[5] = MaplyCoordinateMakeWithDegrees(139.6917, 35.689506);
+    capitals[6] = MaplyCoordinateMakeWithDegrees(166.666667, -77.85);
+    capitals[7] = MaplyCoordinateMakeWithDegrees(-58.383333, -34.6);
+    capitals[8] = MaplyCoordinateMakeWithDegrees(-74.075833, 4.598056);
+    capitals[9] = MaplyCoordinateMakeWithDegrees(-79.516667, 8.983333);
     
-    ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
-    vectorLayer.minZoom = 10;   //15
-    vectorLayer.maxZoom = 10;
-    MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
-    MaplyQuadPagingLayer *quadLayer =
-    [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:vectorLayer];
-    [theViewC addLayer:quadLayer];
+    // work through the spheres
+    NSMutableArray *spheres = [NSMutableArray array];
+    for (unsigned int ii=0;ii<10;ii++)
+    {
+        MaplyShapeSphere *sphere = [[MaplyShapeSphere alloc] init];
+        sphere.center = capitals[ii];
+        sphere.radius = 0.01;
+        [spheres addObject:sphere];
+    }
+    [theViewC addShapes:spheres desc:
+     @{
+       kMaplyColor: [UIColor colorWithRed:0.75 green:0.0 blue:0.0 alpha:0.75]
+       }];
+}
+
+- (void)addBars
+{
+    // set up some locations
+    MaplyCoordinate capitals[10];
+    capitals[0] = MaplyCoordinateMakeWithDegrees(-77.036667, 38.895111);
+    capitals[1] = MaplyCoordinateMakeWithDegrees(120.966667, 14.583333);
+    capitals[2] = MaplyCoordinateMakeWithDegrees(55.75, 37.616667);
+    capitals[3] = MaplyCoordinateMakeWithDegrees(-0.1275, 51.507222);
+    capitals[4] = MaplyCoordinateMakeWithDegrees(-66.916667, 10.5);
+    capitals[5] = MaplyCoordinateMakeWithDegrees(139.6917, 35.689506);
+    capitals[6] = MaplyCoordinateMakeWithDegrees(166.666667, -77.85);
+    capitals[7] = MaplyCoordinateMakeWithDegrees(-58.383333, -34.6);
+    capitals[8] = MaplyCoordinateMakeWithDegrees(-74.075833, 4.598056);
+    capitals[9] = MaplyCoordinateMakeWithDegrees(-79.516667, 8.983333);
+    
+    // get the image and create the markers
+    UIImage *icon = [UIImage imageNamed:@"alcohol-shop-24@2x.png"];
+    NSMutableArray *markers = [NSMutableArray array];
+    for (unsigned int ii=0;ii<10;ii++)
+    {
+        MaplyScreenMarker *marker = [[MaplyScreenMarker alloc] init];
+        marker.image = icon;
+        marker.loc = capitals[ii];
+        marker.size = CGSizeMake(40,40);
+        [markers addObject:marker];
+    }
+    // add them all at once (for efficency)
+    [theViewC addScreenMarkers:markers desc:nil];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 - (void)addCountries
@@ -193,7 +215,8 @@ const bool DoOverlay = false;
                                // add the outline to our view
                                MaplyComponentObject *compObj = [theViewC addVectors:[NSArray arrayWithObject:wgVecObj] desc:vectorDict];
                                // If you ever intend to remove these, keep track of the MaplyComponentObjects above.
-             /*                  // Add a screen label per country
+                               
+                               // Add a screen label per country
                                if ([vecName length] > 0)
                                {
                                    MaplyScreenLabel *label = [[MaplyScreenLabel alloc] init];
@@ -202,22 +225,97 @@ const bool DoOverlay = false;
                                    label.selectable = true;
                                    [theViewC addScreenLabels:@[label] desc:
                                     @{
-                                      kMaplyFont: [UIFont boldSystemFontOfSize:12.0],
+                                      kMaplyFont: [UIFont boldSystemFontOfSize:24.0],
                                       kMaplyTextOutlineColor: [UIColor blackColor],
-                                      kMaplyTextOutlineSize: @(1.0),
+                                      kMaplyTextOutlineSize: @(2.0),
                                       kMaplyColor: [UIColor whiteColor]
                                       }];
-              
                                }
-                           */
                            }
                        }
                    });
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)addBuildings
+{
+    NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
+    
+    CartoDBLayer *cartoLayer = [[CartoDBLayer alloc] initWithSearch:search];
+    cartoLayer.minZoom = 15;
+    cartoLayer.maxZoom = 15;
+    MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
+    MaplyQuadPagingLayer *quadLayer = [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:cartoLayer];
+    [theViewC addLayer:quadLayer];
+}
+
+- (void)addAnnotation:(NSString *)title withSubtitle:(NSString *)subtitle at:(MaplyCoordinate)coord
+{
+    [theViewC clearAnnotations];
+    
+    MaplyAnnotation *annotation = [[MaplyAnnotation alloc] init];
+    annotation.title = title;
+    annotation.subTitle = subtitle;
+    [theViewC addAnnotation:annotation forPoint:coord offset:CGPointZero];
+}
+
+- (void)globeViewController:(WhirlyGlobeViewController *)viewC
+                   didTapAt:(MaplyCoordinate)coord
+{
+    NSString *title = @"Tap Location:";
+    NSString *subtitle = [NSString stringWithFormat:@"(%.2fN, %.2fE)",
+                          coord.y*57.296,coord.x*57.296];
+    [self addAnnotation:title withSubtitle:subtitle at:coord];
+}
+
+- (void)maplyViewController:(MaplyViewController *)viewC
+                   didTapAt:(MaplyCoordinate)coord
+{
+    NSString *title = @"Tap Location:";
+    NSString *subtitle = [NSString stringWithFormat:@"(%.2fN, %.2fE)",
+                          coord.y*57.296,coord.x*57.296];
+    [self addAnnotation:title withSubtitle:subtitle at:coord];
+}
+
+// Unified method to handle the selection
+- (void) handleSelection:(MaplyBaseViewController *)viewC
+                selected:(NSObject *)selectedObj
+{
+    // ensure it's a MaplyVectorObject. It should be one of our outlines.
+    if ([selectedObj isKindOfClass:[MaplyVectorObject class]])
+    {
+        MaplyVectorObject *theVector = (MaplyVectorObject *)selectedObj;
+        MaplyCoordinate location;
+        
+        if ([theVector centroid:&location])
+        {
+            NSString *title = @"Selected:";
+            NSString *subtitle = (NSString *)theVector.userObject;
+            [self addAnnotation:title withSubtitle:subtitle at:location];
+        }
+    } else if ([selectedObj isKindOfClass:[MaplyScreenMarker class]])
+    {
+        // or it might be a screen marker
+        MaplyScreenMarker *theMarker = (MaplyScreenMarker *)selectedObj;
+        
+        NSString *title = @"Selected:";
+        NSString *subtitle = @"Screen Marker";
+        [self addAnnotation:title withSubtitle:subtitle at:theMarker.loc];
+    }
+}
+
+// This is the version for a globe
+- (void) globeViewController:(WhirlyGlobeViewController *)viewC
+                   didSelect:(NSObject *)selectedObj
+{
+    [self handleSelection:viewC selected:selectedObj];
+}
+
+
+// This is the version for a map
+- (void) maplyViewController:(MaplyViewController *)viewC
+                   didSelect:(NSObject *)selectedObj
+{
+    [self handleSelection:viewC selected:selectedObj];
 }
 
 @end
