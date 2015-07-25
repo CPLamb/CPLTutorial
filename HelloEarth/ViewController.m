@@ -71,7 +71,7 @@ const bool DoOverlay = false;
     theViewC.frameInterval = 3;     //2
     
 // Varies the tilt per height
- //   [theViewC setTiltMinHeight:0.005 maxHeight:0.10 minTilt:1.10 maxTilt:0.02];
+    [theViewC setTiltMinHeight:0.005 maxHeight:0.10 minTilt:1.10 maxTilt:0.02];
     
     // add the capability to use the local tiles or remote tiles
     bool useLocalTiles = false;
@@ -190,7 +190,7 @@ const bool DoOverlay = false;
     int picKBytes = 0;
     
     // Just looping along
-    for (int i=0;i<75;i++) {
+    for (int i=0;i<175;i++) {
         NSURL *thePicThumbnailUrl = [NSURL URLWithString:[picsArray[i] objectForKey:@"thumbUrl"]];
         
         MaplyScreenMarker *theScreenMarker = [[MaplyScreenMarker alloc] init];
@@ -204,12 +204,12 @@ const bool DoOverlay = false;
         
         theScreenMarker.loc = theLocation;
         
-        theScreenMarker.size = CGSizeMake(60.0, 60.0);
+        theScreenMarker.size = CGSizeMake(80.0, 80.0);
         theScreenMarker.offset = CGPointMake(-30.0, 10.0);
         theScreenMarker.layoutImportance = MAXFLOAT;
         
         // Adds the pic to the list
-        if ([thePicData length] < 45000) {      // if it's less than 60k
+        if ([thePicData length] < 55000) {      // if it's less than 60k
             [theMarkers addObject:theScreenMarker];
             picCount = picCount + 1;
             picKBytes = picKBytes + [thePicData length];
