@@ -1,23 +1,23 @@
 //
-//  ViewController.m
+//  ViewController_cartoDB.m
 //  HelloEarth
 //
-//  Created by Steve Gifford on 11/11/14.
-//  Copyright (c) 2014 mousebird consulting. All rights reserved.
+//  Created by Chris Lamb on 7/25/15.
+//  Copyright (c) 2015 com.SantaCruzNewspaperTaxi. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "ViewController_cartoDB.h"
 #import "WhirlyGlobeComponent.h"
 #import "CartoDBLayer.h"
 
-@interface ViewController ()
+@interface ViewController_cartoDB ()
 
 - (void) addCountries;
 - (void) addAnnotation:(NSString *)title withSubtitle:(NSString *)subtitle at: (MaplyCoordinate)coord;
 
 @end
 
-@implementation ViewController
+@implementation ViewController_cartoDB
 {
     MaplyBaseViewController *theViewC;
     WhirlyGlobeViewController *globeViewC;
@@ -116,13 +116,13 @@ const bool DoGlobe = true;
                    kMaplyVecWidth: @(4.0)};
     
     // add the countries
-//    [self addCountries];
+    //    [self addCountries];
     
     // add the bar icons
-//    [self addBars];
+    //    [self addBars];
     
     // add some spheres
-//    [self addSpheres];
+    //    [self addSpheres];
     
     // add the CartoDB layer
     [self addBuildings];
@@ -142,7 +142,7 @@ const bool DoGlobe = true;
     capitals[7] = MaplyCoordinateMakeWithDegrees(-58.383333, -34.6);
     capitals[8] = MaplyCoordinateMakeWithDegrees(-74.075833, 4.598056);
     capitals[9] = MaplyCoordinateMakeWithDegrees(-79.516667, 8.983333);
-
+    
     // work through the spheres
     NSMutableArray *spheres = [NSMutableArray array];
     for (unsigned int ii=0;ii<10;ii++)
@@ -197,42 +197,42 @@ const bool DoGlobe = true;
 {
     // handle this in another thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT,0),
-    ^{
-       NSArray *allOutlines = [[NSBundle mainBundle] pathsForResourcesOfType:@"geojson" inDirectory:nil];
-       
-       for (NSString *outlineFile in allOutlines)
-       {
-           NSData *jsonData = [NSData dataWithContentsOfFile:outlineFile];
-           if (jsonData)
-           {
-               MaplyVectorObject *wgVecObj = [MaplyVectorObject VectorObjectFromGeoJSON:jsonData];
-               
-               // the admin tag from the country outline geojson has the country name ­ save
-               NSString *vecName = [[wgVecObj attributes] objectForKey:@"ADMIN"];
-               wgVecObj.userObject = vecName;
-               
-               // add the outline to our view
-               MaplyComponentObject *compObj = [theViewC addVectors:[NSArray arrayWithObject:wgVecObj] desc:vectorDict];
-               // If you ever intend to remove these, keep track of the MaplyComponentObjects above.
-
-               // Add a screen label per country
-               if ([vecName length] > 0)
-               {
-                   MaplyScreenLabel *label = [[MaplyScreenLabel alloc] init];
-                   label.text = vecName;
-                   label.loc = [wgVecObj center];
-                   label.selectable = true;
-                   [theViewC addScreenLabels:@[label] desc:
-                    @{
-                      kMaplyFont: [UIFont boldSystemFontOfSize:24.0],
-                      kMaplyTextOutlineColor: [UIColor blackColor],
-                      kMaplyTextOutlineSize: @(2.0),
-                      kMaplyColor: [UIColor whiteColor]
-                      }];
-               }
-           }
-       }
-    });
+                   ^{
+                       NSArray *allOutlines = [[NSBundle mainBundle] pathsForResourcesOfType:@"geojson" inDirectory:nil];
+                       
+                       for (NSString *outlineFile in allOutlines)
+                       {
+                           NSData *jsonData = [NSData dataWithContentsOfFile:outlineFile];
+                           if (jsonData)
+                           {
+                               MaplyVectorObject *wgVecObj = [MaplyVectorObject VectorObjectFromGeoJSON:jsonData];
+                               
+                               // the admin tag from the country outline geojson has the country name ­ save
+                               NSString *vecName = [[wgVecObj attributes] objectForKey:@"ADMIN"];
+                               wgVecObj.userObject = vecName;
+                               
+                               // add the outline to our view
+                               MaplyComponentObject *compObj = [theViewC addVectors:[NSArray arrayWithObject:wgVecObj] desc:vectorDict];
+                               // If you ever intend to remove these, keep track of the MaplyComponentObjects above.
+                               
+                               // Add a screen label per country
+                               if ([vecName length] > 0)
+                               {
+                                   MaplyScreenLabel *label = [[MaplyScreenLabel alloc] init];
+                                   label.text = vecName;
+                                   label.loc = [wgVecObj center];
+                                   label.selectable = true;
+                                   [theViewC addScreenLabels:@[label] desc:
+                                    @{
+                                      kMaplyFont: [UIFont boldSystemFontOfSize:24.0],
+                                      kMaplyTextOutlineColor: [UIColor blackColor],
+                                      kMaplyTextOutlineSize: @(2.0),
+                                      kMaplyColor: [UIColor whiteColor]
+                                      }];
+                               }
+                           }
+                       }
+                   });
 }
 
 - (void)addBuildings

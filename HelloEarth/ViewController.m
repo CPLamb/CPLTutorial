@@ -78,13 +78,19 @@ const bool DoGlobe = true;
          objectAtIndex:0];
         NSString *aerialTilesCacheDir = [NSString stringWithFormat:@"%@/osmtiles/",
                                          baseCacheDir];
-        int maxZoom = 18;
+        int maxZoom = 17;
         
-        // MapQuest Open Aerial Tiles, Courtesy Of Mapquest
-        // Portions Courtesy NASA/JPL­Caltech and U.S. Depart. of Agriculture, Farm Service Agency
+    // Example ArcGIS base map layers
+        // http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer
+        // http://services.arcgisonline.com/arcgis/rest/services/World_Physical_Map/MapServer
+        // http://services.arcgisonline.com/arcgis/rest/services/Ocean_Basemap/MapServer
+        
+    // MapQuest Open Aerial Tiles, Courtesy Of Mapquest
+        // http://otile1.mqcdn.com/tiles/1.0.0/sat/
+        
         MaplyRemoteTileSource *tileSource =
         [[MaplyRemoteTileSource alloc]
-         initWithBaseURL:@"http://otile1.mqcdn.com/tiles/1.0.0/sat/"
+         initWithBaseURL:@"http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
          ext:@"png" minZoom:0 maxZoom:maxZoom];
         tileSource.cacheDir = aerialTilesCacheDir;
         layer = [[MaplyQuadImageTilesLayer alloc]
@@ -101,8 +107,8 @@ const bool DoGlobe = true;
     // start up over New York
     if (globeViewC != nil)
     {
-        globeViewC.height = 0.0002;
-        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.99,40.75)
+        globeViewC.height = 0.008;
+        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.90,40.9)
                                  time:1.0];
     } else {
         globeViewC.height = 0.0002;
@@ -117,7 +123,7 @@ const bool DoGlobe = true;
                    kMaplyVecWidth: @(4.0)};
     
     // add the countries
-    //    [self addCountries];
+   // [self addCountries];
     
     // add the bar icons
     //    [self addBars];
@@ -238,11 +244,12 @@ const bool DoGlobe = true;
 
 - (void)addBuildings
 {
-    NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
+    NSString *search = @"WHERE=Zone>=1&f=pgeojson&outSR=4326";
+    // NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
     
     CartoDBLayer *cartoLayer = [[CartoDBLayer alloc] initWithSearch:search];
-    cartoLayer.minZoom = 15;
-    cartoLayer.maxZoom = 15;
+    cartoLayer.minZoom = 9;
+    cartoLayer.maxZoom = 13;
     MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
     MaplyQuadPagingLayer *quadLayer = [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:cartoLayer];
     [theViewC addLayer:quadLayer];
