@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "WhirlyGlobeComponent.h"
 #import "CartoDBLayer.h"
+#import "ArcGISLayer.h"
 
 @interface ViewController ()
 
@@ -107,14 +108,19 @@ const bool DoGlobe = true;
     // start up over New York
     if (globeViewC != nil)
     {
-        globeViewC.height = 0.008;
-        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.90,40.9)
+        globeViewC.height = 0.006;
+        globeViewC.heading = 0.15;
+        globeViewC.tilt = 0.25;         // PI/2 radians = horizon??
+        [globeViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.90,40.75)
                                  time:1.0];
     } else {
         globeViewC.height = 0.0002;
         [mapViewC animateToPosition:MaplyCoordinateMakeWithDegrees(-73.99,40.75)
                                time:1.0];
     }
+    
+// Adding a little sauce - AutoTilt
+    [globeViewC setTiltMinHeight:0.01 maxHeight:0.1 minTilt:0.4 maxTilt:0.0];
     
     // set the vector characteristics to be pretty and selectable
     vectorDict = @{
@@ -132,8 +138,26 @@ const bool DoGlobe = true;
     //    [self addSpheres];
     
     // add the CartoDB layer
-    [self addBuildings];
+//    [self addBuildings];
+    
+// add the ArcGIS layer
+    [self addVectorLayer];
 }
+
+- (void)addVectorLayer
+{
+    NSString *search = @"WHERE=Zone>=1&f=pgeojson&outSR=4326";
+    //     NSString *search = @"SELECT the_geom,address,ownername,numfloors FROM mn_mappluto_13v1 WHERE the_geom && ST_SetSRID(ST_MakeBox2D(ST_Point(%f, %f), ST_Point(%f, %f)), 4326) LIMIT 2000;";
+    
+    ArcGISLayer *vectorLayer = [[ArcGISLayer alloc] initWithSearch:search];
+    vectorLayer.minZoom = 10;   //15
+    vectorLayer.maxZoom = 10;
+    MaplySphericalMercator *coordSys = [[MaplySphericalMercator alloc] initWebStandard];
+    MaplyQuadPagingLayer *quadLayer =
+    [[MaplyQuadPagingLayer alloc] initWithCoordSystem:coordSys delegate:vectorLayer];
+    [theViewC addLayer:quadLayer];
+}
+
 
 - (void)addSpheres
 {
